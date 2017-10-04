@@ -1,0 +1,35 @@
+#!/bin/bash -xe
+
+function log() {
+  echo "[$(date)]$1" | tee -a /var/log/jenkins_cloudinit.log
+}
+
+log '[INFO] Preparing configuration variables'
+INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+JENKINS_VERSION=${jenkins_green_version}
+JENKINS_HOME='/var/lib/jenkins'
+
+log '[INFO] Setting Java8 as default'
+/usr/sbin/alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+
+log '[INFO] Setting up Jenkins package name'
+if [ $${JENKINS_VERSION} == 'latest' ]; then
+  JENKINS_PACKAGE='jenkins'
+else
+  JENKINS_PACKAGE="jenkins-$${JENKINS_VERSION}"
+fi
+log "[INFO] Package name: $${JENKINS_PACKAGE}"
+
+log '[INFO] Configuring Jenkins Yum Repository'
+wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+log "[INFO] Installing Jenkins ver. $${JENKINS_VERSION}"
+yum install -y $${JENKINS_PACKAGE}
+mkdir -p $${JENKINS_HOME}
+chown jenkins:jenkins -R $${JENKINS_HOME}
+chkconfig jenkins off
+
+# everything else has to be configured manually
+
+log '[INFO] Jenkins GREEN configuration finished'

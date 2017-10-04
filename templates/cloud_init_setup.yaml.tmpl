@@ -1,0 +1,12 @@
+#cloud-config
+bootcmd:
+  - "hostname jenkins-$INSTANCE_ID.${domain_name}"
+  - "sed -i \"1i$(curl -fs http://169.254.169.254/latest/meta-data/local-ipv4) jenkins-$INSTANCE_ID.${domain_name} jenkins-$INSTANCE_ID\" /etc/hosts"
+  - "sed -i -e '/HOSTNAME=/d' /etc/sysconfig/network"
+  - "echo \"HOSTNAME=jenkins-$INSTANCE_ID.${domain_name}\" >> /etc/sysconfig/network"
+  - "echo \"jenkins-$INSTANCE_ID\" > /etc/hostname"
+packages:
+  - java-1.8.0-openjdk
+  - htop
+  - tcpdump
+preserve_hostname: true

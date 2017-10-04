@@ -1,0 +1,83 @@
+#!/bin/bash -xe
+
+function log() {
+  echo "[$(date)]$1" | tee -a /var/log/jenkins_cloudinit.log
+}
+
+log '[INFO] Preparing configuration variables'
+INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+JENKINS_VERSION=${jenkins_blue_version}
+JENKINS_HOME='/var/lib/jenkins'
+EBS_VOLUME_ID=${ebs_volume_id}
+EBS_DEVICE_NAME=${ebs_device_name}
+AWS_REGION=${aws_region}
+
+log '[INFO] Setting Java8 as default'
+/usr/sbin/alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+
+log '[INFO] Setting up Jenkins package name'
+if [ $${JENKINS_VERSION} == 'latest' ]; then
+  JENKINS_PACKAGE='jenkins'
+else
+  JENKINS_PACKAGE="jenkins-$${JENKINS_VERSION}"
+fi
+log "[INFO] Package name: $${JENKINS_PACKAGE}"
+
+log '[INFO] Configuring Jenkins Yum Repository'
+wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+log "[INFO] Installing Jenkins ver. $${JENKINS_VERSION}"
+yum install -y $${JENKINS_PACKAGE}
+chkconfig jenkins off
+
+log '[INFO] Attaching EBS volume'
+ATTACH_RETRIES=10
+until [ $${ATTACH_RETRIES} -eq 0 ]; do
+  aws ec2 attach-volume \
+    --volume-id $${EBS_VOLUME_ID} \
+    --instance-id $${INSTANCE_ID} \
+    --device $${EBS_DEVICE_NAME} \
+    --region $${AWS_REGION} \
+    && break
+  let ATTACH_RETRIES=$${ATTACH_RETRIES}-1
+  sleep 10
+done
+
+log '[INFO] Waiting for EBS volume to be attached'
+ATTACH_STATUS='unknown'
+ATTACH_RETRIES=10
+until [ $${ATTACH_STATUS} == 'attached' ]; do
+  ATTACH_STATUS=$(aws ec2 describe-volumes \
+    --volume-ids $${EBS_VOLUME_ID} \
+    --query Volumes[].Attachments[].State \
+    --region $${AWS_REGION} \
+    --output text)
+  let ATTACH_RETRIES=$${ATTACH_RETRIES}-1
+  if [ $${ATTACH_RETRIES} -eq 0 ]; then 
+    log "[ERROR] Could not attach EBS volume after $${ATTACH_RETRIES} retries"
+    exit 1
+  fi
+  sleep 5
+done
+
+CHECK_EBS=$(file -s $${EBS_DEVICE_NAME})
+if [[ $${CHECK_EBS} == "$${EBS_DEVICE_NAME}: data" ]]; then
+  log '[INFO] Creating ext4 file system on EBS'
+  mkfs -t ext4 $${EBS_DEVICE_NAME}
+else
+  log '[INFO] EBS volume already contains a filesystem'
+fi
+
+log '[INFO] Mounting'
+mkdir -p $${JENKINS_HOME}
+mount $${EBS_DEVICE_NAME} $${JENKINS_HOME}
+chown jenkins:jenkins -R $${JENKINS_HOME}
+
+log '[INFO] Adding new configuration entry to FSTAB'
+echo "$${EBS_DEVICE_NAME}  $${JENKINS_HOME}  ext4  defaults,nofail  0 0" >> /etc/fstab
+
+log '[INFO] Starting Jenkins'
+service jenkins start
+
+log '[INFO] Jenkins BLUE configuration finished'
