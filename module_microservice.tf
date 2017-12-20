@@ -7,7 +7,7 @@ module "jenkins_blue" {
   component   = "${var.component}"
 
   vpc_id               = "${var.vpc_id}"
-  availability_zones   = "${slice(var.availability_zones, 0, length(var.availability_zones)-1)}"
+  availability_zones   = "${slice(var.availability_zones, 0, length(var.availability_zones))}"
   subnets_cidrs        = "${var.jenkins_blue_subnet_cidrs}"
   subnets_route_tables = ["${var.private_route_table_ids}"]
 
@@ -39,7 +39,7 @@ module "jenkins_green" {
   component   = "${var.component}"
 
   vpc_id               = "${var.vpc_id}"
-  availability_zones   = "${slice(var.availability_zones, 1, length(var.availability_zones)-1)}"
+  availability_zones   = "${slice(var.availability_zones, 1, length(var.availability_zones))}"
   subnets_cidrs        = "${var.jenkins_green_subnet_cidrs}"
   subnets_route_tables = ["${var.private_route_table_ids}"]
 

@@ -50,7 +50,7 @@ Supported operating systems:
 
 **Terraform compatibility**
 ------
-TF versions tested: 0.9.11
+TF versions tested: 0.9.11, 0.10.7
 
 **Dependencies**
 ------
