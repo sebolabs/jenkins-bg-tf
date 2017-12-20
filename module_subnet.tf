@@ -1,5 +1,5 @@
 module "elb_subnets" {
-  source = "github.com/sebolabs/subnets-tf"
+  source = "github.com/sebolabs/subnets-tf.git"
 
   name        = "${var.name}-elb"
   project     = "${var.project}"
