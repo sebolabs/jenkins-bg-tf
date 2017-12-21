@@ -1,6 +1,7 @@
 resource "aws_elb" "jenkins" {
   name                        = "${var.project}-${var.environment}-${var.component}-${var.name}"
   internal                    = "${var.elb_internal}"
+  idle_timeout                = "${var.elb_idle_timeout}"
   connection_draining         = "${var.elb_connection_draining}"
   connection_draining_timeout = "${var.elb_connection_draining_timeout}"
   cross_zone_load_balancing   = "${var.elb_cross_zone_load_balancing}"

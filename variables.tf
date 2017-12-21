@@ -106,7 +106,6 @@ variable "jenkins_green_nodes_number" {
 variable "jenkins_blue_version" {
   type        = "string"
   description = "The blue Jenkins package version to be installed on boot"
-  default     = "latest"
 }
 
 variable "jenkins_green_version" {
@@ -129,6 +128,12 @@ variable "elb_internal" {
 variable "elb_subnets_cidrs" {
   type        = "list"
   description = "A list of CIDR blocks used for ELB subnets creation"
+}
+
+variable "elb_idle_timeout" {
+  type        = "string"
+  description = "The time in seconds that the connection is allowed to be idle"
+  default     = 400
 }
 
 variable "elb_connection_draining" {

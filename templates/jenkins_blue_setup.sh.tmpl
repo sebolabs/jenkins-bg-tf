@@ -71,8 +71,8 @@ fi
 
 log '[INFO] Mounting'
 mkdir -p $${JENKINS_HOME}
-mount $${EBS_DEVICE_NAME} $${JENKINS_HOME}
 chown jenkins:jenkins -R $${JENKINS_HOME}
+mount $${EBS_DEVICE_NAME} $${JENKINS_HOME}
 
 log '[INFO] Adding new configuration entry to FSTAB'
 echo "$${EBS_DEVICE_NAME}  $${JENKINS_HOME}  ext4  defaults,nofail  0 0" >> /etc/fstab

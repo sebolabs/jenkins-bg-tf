@@ -6,6 +6,14 @@ output "jenkins_blue_iam_role_name" {
   value = "${module.jenkins_blue.iam_role_name}"
 }
 
+output "jenkins_blue_asg_id" {
+  value = "${module.jenkins_blue.autoscaling_group_id}"
+}
+
+output "jenkins_blue_asg_name" {
+  value = "${module.jenkins_blue.autoscaling_group_name}"
+}
+
 output "jenkins_green_iam_role_name" {
   value = "${module.jenkins_blue.iam_role_name}"
 }
