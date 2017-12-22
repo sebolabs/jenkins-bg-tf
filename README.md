@@ -2,10 +2,11 @@
 
 **Info**
 ------
-This Terraform module creates a range of resources to deliver a fully functional Jenkins Master infrastructure. 
-It provides also some of the Blue/Green capabilities based on my Jenkins usage experience.
+This Terraform module creates a range of resources to deliver a fully functional Jenkins Master infrastructure with some of the Blue/Green capabilities, all based on my professional Jenkins usage experience.
 
-More info about the whole idea of the B/G Jenkins deployment, its design and limitations can be found here -> <TBC>. 
+**Story**
+------
+[Jenkins HA in AWS — a proven architecture](https://medium.com/@sebolabs/jenkins-ha-aws-cd55d82057c8)
 
 **Usage**
 ------
